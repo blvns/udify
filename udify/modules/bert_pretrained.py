@@ -521,8 +521,8 @@ class BertEmbedder(TokenEmbedder):
         print(embedded_inputs.shape, attn_mask.shape)
 
         #run embeddings through bert encoders
-        all_encoder_layers[0] = self.bert_model.encoder(embedded_inputs,
-                                                attention_mask=attn_mask)
+        all_encoder_layers = self.bert_model.encoder(embedded_inputs,
+                                                attention_mask=attn_mask)[0]
         all_encoder_layers = torch.stack(all_encoder_layers)
 
         if needs_split:
