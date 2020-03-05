@@ -491,7 +491,7 @@ class BertEmbedder(TokenEmbedder):
 
         print(embedded_inputs.shape)
         print(input_mask.shape)
-        print(util.combine_initial_dims(input_mask))
+        print(util.combine_initial_dims(input_mask).shape)
         input('...') #DEBUGGING
 
         #run embeddings through bert encoder
