@@ -483,11 +483,16 @@ class BertEmbedder(TokenEmbedder):
         position_ids = position_ids.unsqueeze(0).expand(input_shape)
 
         embedded_words = self.bert_model.embeddings.word_embeddings(input_ids)
-        embedded_positions = self.bert_model.embeddings.position_embeddings()
+        embedded_positions = self.bert_model.embeddings.position_embeddings(position_ids)
         embedded_types = self.bert_model.embeddings.token_type_embeddings(util.combine_initial_dims(token_type_ids))
         embedded_inputs = embedded_words + embedded_positions + embedded_types
         embedded_inputs = self.bert_model.embeddings.LayerNorm(embedded_inputs)
         embedded_inputs = self.bert_model.embeddings.dropout(embedded_inputs)
+
+        print(embedded_inputs.shape)
+        print(input_mask.shape)
+        print(util.combine_initial_dims(input_mask))
+        input('...') #DEBUGGING
 
         #run embeddings through bert encoder
         all_encoder_layers, _ = self.bert_model.encoder(embedded_inputs,
