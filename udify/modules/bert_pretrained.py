@@ -477,6 +477,7 @@ class BertEmbedder(TokenEmbedder):
         # before calling the BERT model and then reshape back at the end.
 
         #get individual embeddings and combine manually
+        print(input_ids.shape)
         input_ids = util.combine_initial_dims(input_ids)
         input_shape = input_ids.size()
         position_ids = torch.arange(input_shape[1], dtype=torch.long).cuda()
