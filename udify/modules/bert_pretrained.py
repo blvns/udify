@@ -447,7 +447,7 @@ def _bert_masks(attention_mask, input_shape):
     else:
         head_mask = [None] * 12#also hardcoding 12 layers here...
 
-    return extended_attention_mask, head_mask, encoder_hidden_states, encoder_extended_attention_mask
+    return extended_attention_mask, head_mask, None, encoder_extended_attention_mask
 
 class BertEmbedder(TokenEmbedder):
     """
