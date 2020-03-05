@@ -361,6 +361,90 @@ def _get_token_type_ids(wordpiece_ids: List[int],
             token_type_ids.append(type_id)
     return token_type_ids
 
+#copied from BERT model code (so that we can pull out emebdding functions)
+def _bert_masks(attention_mask, input_shape):
+    if attention_mask is None:
+        attention_mask = torch.ones(input_shape, device=device)
+
+    # We can provide a self-attention mask of dimensions [batch_size, from_seq_length, to_seq_length]
+    # ourselves in which case we just need to make it broadcastable to all heads.
+    if attention_mask.dim() == 3:
+        extended_attention_mask = attention_mask[:, None, :, :]
+    elif attention_mask.dim() == 2:
+        # Provided a padding mask of dimensions [batch_size, seq_length]
+        # - if the model is a decoder, apply a causal mask in addition to the padding mask
+        # - if the model is an encoder, make the mask broadcastable to [batch_size, num_heads, seq_length, seq_length]
+        if self.config.is_decoder:
+            batch_size, seq_length = input_shape
+            seq_ids = torch.arange(seq_length, device=device)
+            causal_mask = seq_ids[None, None, :].repeat(batch_size, seq_length, 1) <= seq_ids[None, :, None]
+            causal_mask = causal_mask.to(
+                attention_mask.dtype
+            )  # causal and attention masks must have same type with pytorch version < 1.3
+            extended_attention_mask = causal_mask[:, None, :, :] * attention_mask[:, None, None, :]
+        else:
+            extended_attention_mask = attention_mask[:, None, None, :]
+    else:
+        raise ValueError(
+            "Wrong shape for input_ids (shape {}) or attention_mask (shape {})".format(
+                input_shape, attention_mask.shape
+            )
+        )
+
+    # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
+    # masked positions, this operation will create a tensor which is 0.0 for
+    # positions we want to attend and -10000.0 for masked positions.
+    # Since we are adding it to the raw scores before the softmax, this is
+    # effectively the same as removing these entirely.
+    extended_attention_mask = extended_attention_mask.to(dtype=next(self.parameters()).dtype)  # fp16 compatibility
+    extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
+
+    # If a 2D ou 3D attention mask is provided for the cross-attention
+    # we need to make broadcastabe to [batch_size, num_heads, seq_length, seq_length]
+    if self.config.is_decoder and encoder_hidden_states is not None:
+        encoder_batch_size, encoder_sequence_length, _ = encoder_hidden_states.size()
+        encoder_hidden_shape = (encoder_batch_size, encoder_sequence_length)
+        if encoder_attention_mask is None:
+            encoder_attention_mask = torch.ones(encoder_hidden_shape, device=device)
+
+        if encoder_attention_mask.dim() == 3:
+            encoder_extended_attention_mask = encoder_attention_mask[:, None, :, :]
+        elif encoder_attention_mask.dim() == 2:
+            encoder_extended_attention_mask = encoder_attention_mask[:, None, None, :]
+        else:
+            raise ValueError(
+                "Wrong shape for encoder_hidden_shape (shape {}) or encoder_attention_mask (shape {})".format(
+                    encoder_hidden_shape, encoder_attention_mask.shape
+                )
+            )
+
+        encoder_extended_attention_mask = encoder_extended_attention_mask.to(
+            dtype=next(self.parameters()).dtype
+        )  # fp16 compatibility
+        encoder_extended_attention_mask = (1.0 - encoder_extended_attention_mask) * -10000.0
+    else:
+        encoder_extended_attention_mask = None
+
+    # Prepare head mask if needed
+    # 1.0 in head_mask indicate we keep the head
+    # attention_probs has shape bsz x n_heads x N x N
+    # input head_mask has shape [num_heads] or [num_hidden_layers x num_heads]
+    # and head_mask is converted to shape [num_hidden_layers x batch x num_heads x seq_length x seq_length]
+    if head_mask is not None:
+        if head_mask.dim() == 1:
+            head_mask = head_mask.unsqueeze(0).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
+            head_mask = head_mask.expand(self.config.num_hidden_layers, -1, -1, -1, -1)
+        elif head_mask.dim() == 2:
+            head_mask = (
+                head_mask.unsqueeze(1).unsqueeze(-1).unsqueeze(-1)
+            )  # We can specify head_mask for each layer
+        head_mask = head_mask.to(
+            dtype=next(self.parameters()).dtype
+        )  # switch to fload if need + fp16 compatibility
+    else:
+        head_mask = [None] * self.config.num_hidden_layers
+
+    return extended_attention_mask, head_mask, encoder_hidden_states, encoder_extended_attention_mask
 
 class BertEmbedder(TokenEmbedder):
     """
@@ -477,27 +561,29 @@ class BertEmbedder(TokenEmbedder):
         # before calling the BERT model and then reshape back at the end.
 
         #get individual embeddings and combine manually
-        print(input_ids.shape)
         input_ids = util.combine_initial_dims(input_ids)
+        device = input_ids.device
         input_shape = input_ids.size()
-        position_ids = torch.arange(input_shape[1], dtype=torch.long).cuda()
+        position_ids = torch.arange(input_shape[1], dtype=torch.long, device=device)
         position_ids = position_ids.unsqueeze(0).expand(input_shape)
 
         embedded_words = self.bert_model.embeddings.word_embeddings(input_ids)
         embedded_positions = self.bert_model.embeddings.position_embeddings(position_ids)
         embedded_types = self.bert_model.embeddings.token_type_embeddings(util.combine_initial_dims(token_type_ids))
+
         embedded_inputs = embedded_words + embedded_positions + embedded_types
         embedded_inputs = self.bert_model.embeddings.LayerNorm(embedded_inputs)
         embedded_inputs = self.bert_model.embeddings.dropout(embedded_inputs)
 
-        print(embedded_inputs.shape)
-        print(input_mask.shape)
-        print(util.combine_initial_dims(input_mask).shape)
-        input('...') #DEBUGGING
+        input_mask = util.combine_initial_dims(input_mask)
+        attn_mask, head_mask, encoder_hidden_states, encoder_attn_mask = _bert_masks(input_mask, input_shape)
 
         #run embeddings through bert encoder
         all_encoder_layers, _ = self.bert_model.encoder(embedded_inputs,
-                                                attention_mask=util.combine_initial_dims(input_mask))
+                                                attention_mask=attn_mask,
+                                                head_mask=head_mask,
+                                                encoder_hidden_states=encoder_hidden_states,
+                                                encoder_attention_mask=encoder_attn_mask)
         all_encoder_layers = torch.stack(all_encoder_layers)
 
         if needs_split:
