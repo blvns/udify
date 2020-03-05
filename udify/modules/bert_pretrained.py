@@ -402,29 +402,30 @@ def _bert_masks(attention_mask, input_shape):
 
     # If a 2D ou 3D attention mask is provided for the cross-attention
     # we need to make broadcastabe to [batch_size, num_heads, seq_length, seq_length]
-    if self.config.is_decoder and encoder_hidden_states is not None:
-        encoder_batch_size, encoder_sequence_length, _ = encoder_hidden_states.size()
-        encoder_hidden_shape = (encoder_batch_size, encoder_sequence_length)
-        if encoder_attention_mask is None:
-            encoder_attention_mask = torch.ones(encoder_hidden_shape, device=device)
+    #if self.config.is_decoder and encoder_hidden_states is not None:
+    #    encoder_batch_size, encoder_sequence_length, _ = encoder_hidden_states.size()
+    #    encoder_hidden_shape = (encoder_batch_size, encoder_sequence_length)
+    #    if encoder_attention_mask is None:
+    #        encoder_attention_mask = torch.ones(encoder_hidden_shape, device=device)
 
-        if encoder_attention_mask.dim() == 3:
-            encoder_extended_attention_mask = encoder_attention_mask[:, None, :, :]
-        elif encoder_attention_mask.dim() == 2:
-            encoder_extended_attention_mask = encoder_attention_mask[:, None, None, :]
-        else:
-            raise ValueError(
-                "Wrong shape for encoder_hidden_shape (shape {}) or encoder_attention_mask (shape {})".format(
-                    encoder_hidden_shape, encoder_attention_mask.shape
-                )
-            )
+    #    if encoder_attention_mask.dim() == 3:
+    #        encoder_extended_attention_mask = encoder_attention_mask[:, None, :, :]
+    #    elif encoder_attention_mask.dim() == 2:
+    #        encoder_extended_attention_mask = encoder_attention_mask[:, None, None, :]
+    #    else:
+    #        raise ValueError(
+    #            "Wrong shape for encoder_hidden_shape (shape {}) or encoder_attention_mask (shape {})".format(
+    #                encoder_hidden_shape, encoder_attention_mask.shape
+    #            )
+    #        )
 
-        encoder_extended_attention_mask = encoder_extended_attention_mask.to(
-            dtype=torch.long
-        )  # fp16 compatibility
-        encoder_extended_attention_mask = (1.0 - encoder_extended_attention_mask) * -10000.0
-    else:
-        encoder_extended_attention_mask = None
+    #    encoder_extended_attention_mask = encoder_extended_attention_mask.to(
+    #        dtype=torch.long
+    #    )  # fp16 compatibility
+    #    encoder_extended_attention_mask = (1.0 - encoder_extended_attention_mask) * -10000.0
+    #else:
+    #this model is only an encoder...
+    encoder_extended_attention_mask = None
 
     # Prepare head mask if needed
     # 1.0 in head_mask indicate we keep the head
