@@ -362,10 +362,7 @@ def _get_token_type_ids(wordpiece_ids: List[int],
     return token_type_ids
 
 #copied from BERT model code (so that we can pull out emebdding functions)
-def _bert_masks(attention_mask, input_shape):
-    if attention_mask is None:
-        attention_mask = torch.ones(input_shape, device=device)
-
+def _bert_mask(attention_mask, input_shape):
     # We can provide a self-attention mask of dimensions [batch_size, from_seq_length, to_seq_length]
     # ourselves in which case we just need to make it broadcastable to all heads.
     if attention_mask.dim() == 3:
