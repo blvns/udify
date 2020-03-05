@@ -518,12 +518,11 @@ class BertEmbedder(TokenEmbedder):
 
         input_mask = util.combine_initial_dims(input_mask)
         attn_mask = _bert_mask(input_mask, input_shape)
-        print(embedded_inputs.shape, attn_mask.shape)
 
         #run embeddings through bert encoders
         all_encoder_layers = self.bert_model.encoder(embedded_inputs,
                                                 attention_mask=attn_mask)
-        print(len(all_encoder_layers))
+        print(len(all_encoder_layers), all_encoder_layers[0].shape)
         quit()
         all_encoder_layers = torch.stack(all_encoder_layers)
 
