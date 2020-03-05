@@ -475,8 +475,22 @@ class BertEmbedder(TokenEmbedder):
 
         # input_ids may have extra dimensions, so we reshape down to 2-d
         # before calling the BERT model and then reshape back at the end.
-        all_encoder_layers, _ = self.bert_model(input_ids=util.combine_initial_dims(input_ids),
-                                                token_type_ids=util.combine_initial_dims(token_type_ids),
+
+        #get individual embeddings and combine manually
+        input_ids = util.combine_initial_dims(input_ids)
+        input_shape = input_ids.size()
+        position_ids = torch.arange(input_shape[1], dtype=torch.long, device=device)
+        position_ids = position_ids.unsqueeze(0).expand(input_shape)
+
+        embedded_words = self.bert_model.embeddings.word_embeddings(input_ids)
+        embedded_positions = self.bert_model.embeddings.position_embeddings()
+        embedded_types = self.bert_model.embeddings.token_type_embeddings(util.combine_initial_dims(token_type_ids))
+        embedded_inputs = embedded_words + embedded_positions + embedded_types
+        embedded_inputs = self.bert_model.embeddings.LayerNorm(embedded_inputs)
+        embedded_inputs = self.bert_model.embeddings.dropout(embedded_inputs)
+
+        #run embeddings through bert encoder
+        all_encoder_layers, _ = self.bert_model.encoder(embedded_inputs,
                                                 attention_mask=util.combine_initial_dims(input_mask))
         all_encoder_layers = torch.stack(all_encoder_layers)
 
