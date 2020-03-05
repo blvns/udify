@@ -479,7 +479,7 @@ class BertEmbedder(TokenEmbedder):
         #get individual embeddings and combine manually
         input_ids = util.combine_initial_dims(input_ids)
         input_shape = input_ids.size()
-        position_ids = torch.arange(input_shape[1], dtype=torch.long, device=device)
+        position_ids = torch.arange(input_shape[1], dtype=torch.long).cuda()
         position_ids = position_ids.unsqueeze(0).expand(input_shape)
 
         embedded_words = self.bert_model.embeddings.word_embeddings(input_ids)
