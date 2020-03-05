@@ -371,18 +371,6 @@ def _bert_masks(attention_mask, input_shape):
     if attention_mask.dim() == 3:
         extended_attention_mask = attention_mask[:, None, :, :]
     elif attention_mask.dim() == 2:
-        # Provided a padding mask of dimensions [batch_size, seq_length]
-        # - if the model is a decoder, apply a causal mask in addition to the padding mask
-        # - if the model is an encoder, make the mask broadcastable to [batch_size, num_heads, seq_length, seq_length]
-        #if self.config.is_decoder:
-        #    batch_size, seq_length = input_shape
-        #    seq_ids = torch.arange(seq_length, device=device)
-        #    causal_mask = seq_ids[None, None, :].repeat(batch_size, seq_length, 1) <= seq_ids[None, :, None]
-        #    causal_mask = causal_mask.to(
-        #        attention_mask.dtype
-        #    )  # causal and attention masks must have same type with pytorch version < 1.3
-        #    extended_attention_mask = causal_mask[:, None, :, :] * attention_mask[:, None, None, :]
-        #else:
         #this model is only an encoder...
         extended_attention_mask = attention_mask[:, None, None, :]
     else:
@@ -397,7 +385,7 @@ def _bert_masks(attention_mask, input_shape):
     # positions we want to attend and -10000.0 for masked positions.
     # Since we are adding it to the raw scores before the softmax, this is
     # effectively the same as removing these entirely.
-    extended_attention_mask = extended_attention_mask.to(dtype=torch.long)  # fp16 compatibility
+    extended_attention_mask = extended_attention_mask.to(dtype=torch.float)  # fp16 compatibility
     extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
     return extended_attention_mask
@@ -532,7 +520,7 @@ class BertEmbedder(TokenEmbedder):
         embedded_inputs = self.bert_model.embeddings.dropout(embedded_inputs)
 
         input_mask = util.combine_initial_dims(input_mask)
-        attn_mask = _bert_masks(input_mask, input_shape)
+        attn_mask = _bert_mask(input_mask, input_shape)
 
         #run embeddings through bert encoders
         all_encoder_layers, _ = self.bert_model.encoder(embedded_inputs,
