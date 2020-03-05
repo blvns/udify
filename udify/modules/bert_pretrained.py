@@ -420,7 +420,7 @@ def _bert_masks(attention_mask, input_shape):
             )
 
         encoder_extended_attention_mask = encoder_extended_attention_mask.to(
-            dtype=next(self.parameters()).dtype
+            dtype=torch.long
         )  # fp16 compatibility
         encoder_extended_attention_mask = (1.0 - encoder_extended_attention_mask) * -10000.0
     else:
@@ -434,16 +434,16 @@ def _bert_masks(attention_mask, input_shape):
     if head_mask is not None:
         if head_mask.dim() == 1:
             head_mask = head_mask.unsqueeze(0).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
-            head_mask = head_mask.expand(self.config.num_hidden_layers, -1, -1, -1, -1)
+            head_mask = head_mask.expand(12, -1, -1, -1, -1) #hardcoding number of layers here...
         elif head_mask.dim() == 2:
             head_mask = (
                 head_mask.unsqueeze(1).unsqueeze(-1).unsqueeze(-1)
             )  # We can specify head_mask for each layer
         head_mask = head_mask.to(
-            dtype=next(self.parameters()).dtype
+            dtype=torch.long
         )  # switch to fload if need + fp16 compatibility
     else:
-        head_mask = [None] * self.config.num_hidden_layers
+        head_mask = [None] * 12#also hardcoding 12 layers here...
 
     return extended_attention_mask, head_mask, encoder_hidden_states, encoder_extended_attention_mask
 
