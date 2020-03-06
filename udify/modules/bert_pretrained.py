@@ -522,13 +522,11 @@ class BertEmbedder(TokenEmbedder):
         print(position_ids.shape)
         #TODO: shuffle position ids
         split_position_ids = position_ids.split(1, dim=0)
-        for pos_ids in split_position_ids:
-            print(pos_ids)
-            pos_ids = pos_ids.view(-1)[torch.randperm(pos_ids.nelement())]
-            print(pos_ids)
-            print(pos_ids.shape)
-            input('...')
+        for pos_ids in split_position_ids: pos_ids = pos_ids.view(-1)[torch.randperm(pos_ids.nelement())]
         position_ids = torch.stack(split_position_ids, dim=0)
+        print(position_ids)
+        print(position_ids.shape)
+        input('...')
         embedded_positions = self.bert_model.embeddings.position_embeddings(position_ids)
         embedded_inputs = embedded_words + embedded_positions + embedded_types
         quit()
