@@ -21,6 +21,8 @@ from allennlp.data.tokenizers.token import Token
 from allennlp.data.token_indexers.token_indexer import TokenIndexer
 from allennlp.nn import util
 
+import random
+
 from udify.modules.scalar_mix import ScalarMixWithDropout
 
 logger = logging.getLogger(__name__)
