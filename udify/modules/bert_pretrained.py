@@ -520,7 +520,7 @@ class BertEmbedder(TokenEmbedder):
 
         #PERTURBED finetuning (shuffle positional embeddings)
        
-        split_position_ids = position_ids.split(1, dim=0)
+        split_position_ids = list(position_ids.split(1, dim=0))
         print(split_position_ids)
         for idx in range(len(split_position_ids)): 
             p = split_position_ids[idx]
