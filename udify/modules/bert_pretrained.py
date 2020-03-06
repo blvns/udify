@@ -531,7 +531,7 @@ class BertEmbedder(TokenEmbedder):
 
         #PERTURBED finetuning (rotate positional embeddings)
         print(position_ids.shape)
-        p_len = p.shape[-1]
+        p_len = position_ids.shape[-1]
         split_position_ids = list(position_ids.split(1, dim=0))
         for idx in range(len(split_position_ids)): 
             p = split_position_ids[idx]
