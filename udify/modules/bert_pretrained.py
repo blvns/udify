@@ -524,11 +524,11 @@ class BertEmbedder(TokenEmbedder):
         split_position_ids = position_ids.split(1, dim=0)
         for pos_ids in split_position_ids:
             print(pos_ids)
-            pos_ids = pos_ids[torch.randperm(pos_ids.nelement())]
+            pos_ids = pos_ids.view(-1)[torch.randperm(pos_ids.nelement())]
             print(pos_ids)
             print(pos_ids.shape)
             input('...')
-        position_ids = torch.cat(split_position_ids, dim=0)
+        position_ids = torch.stack(split_position_ids, dim=0)
         embedded_positions = self.bert_model.embeddings.position_embeddings(position_ids)
         embedded_inputs = embedded_words + embedded_positions + embedded_types
         quit()
