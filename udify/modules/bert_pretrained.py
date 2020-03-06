@@ -537,7 +537,7 @@ class BertEmbedder(TokenEmbedder):
             p = split_position_ids[idx]
             rotate_offset = random.randint(0, p_len-1)
             split_position_ids[idx] = torch.cat([p[:, p_len-rotate_offset:], p[:, :p_len-rotate_offset]], dim=-1)
-        position_ids = torch.stack(split_position_ids, dim=0)
+        position_ids = torch.cat(split_position_ids, dim=0)
         print(position_ids.shape)
         quit()
         embedded_positions = self.bert_model.embeddings.position_embeddings(position_ids)
