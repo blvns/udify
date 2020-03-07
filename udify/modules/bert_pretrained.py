@@ -518,16 +518,16 @@ class BertEmbedder(TokenEmbedder):
         #embedded_inputs = embedded_words + embedded_positions + embedded_types
 
         #PERTURBED finetuning (remove positional embeddings)
-        embedded_inputs = embedded_words + embedded_types
+        #embedded_inputs = embedded_words + embedded_types
 
         #PERTURBED finetuning (shuffle positional embeddings)
-        #split_position_ids = list(position_ids.split(1, dim=0))
-        #for idx in range(len(split_position_ids)): 
-        #    p = split_position_ids[idx]
-        #    split_position_ids[idx] = p.view(-1)[torch.randperm(p.nelement())]
-        #position_ids = torch.stack(split_position_ids, dim=0)
-        #embedded_positions = self.bert_model.embeddings.position_embeddings(position_ids)
-        #embedded_inputs = embedded_words + embedded_positions + embedded_types
+        split_position_ids = list(position_ids.split(1, dim=0))
+        for idx in range(len(split_position_ids)): 
+            p = split_position_ids[idx]
+            split_position_ids[idx] = p.view(-1)[torch.randperm(p.nelement())]
+        position_ids = torch.stack(split_position_ids, dim=0)
+        embedded_positions = self.bert_model.embeddings.position_embeddings(position_ids)
+        embedded_inputs = embedded_words + embedded_positions + embedded_types
 
         #PERTURBED finetuning (rotate positional embeddings)
         #p_len = position_ids.shape[-1]
