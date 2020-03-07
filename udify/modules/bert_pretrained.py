@@ -514,11 +514,11 @@ class BertEmbedder(TokenEmbedder):
         embedded_types = self.bert_model.embeddings.token_type_embeddings(util.combine_initial_dims(token_type_ids))
 
         #NORMAL finetuning (with positional embeddings)
-        embedded_positions = self.bert_model.embeddings.position_embeddings(position_ids)
-        embedded_inputs = embedded_words + embedded_positions + embedded_types
+        #embedded_positions = self.bert_model.embeddings.position_embeddings(position_ids)
+        #embedded_inputs = embedded_words + embedded_positions + embedded_types
 
         #PERTURBED finetuning (remove positional embeddings)
-        #embedded_inputs = embedded_words + embedded_types
+        embedded_inputs = embedded_words + embedded_types
 
         #PERTURBED finetuning (shuffle positional embeddings)
         #split_position_ids = list(position_ids.split(1, dim=0))
