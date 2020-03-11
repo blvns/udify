@@ -28,9 +28,6 @@ def main(args):
 	#save BERT encoder
 	pickle.dump(encoder, open(args.encoder_ckpt, 'wb'))
 
-	d = pickle.load(open(args.encoder_ckpt, 'rb'))
-	print(d) #DEBUGGING
-
 if __name__ == "__main__":
 	args = parser.parse_args()
 	print(args) 
