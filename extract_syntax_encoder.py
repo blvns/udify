@@ -20,7 +20,7 @@ def main(args):
 	archive = load_archive(args.ckpt) #cuda_device=cuda_device)
 	predictor = Predictor.from_archive(archive, predictor)
 
-	print(predictor)
+	print(predictor._model)
 
 
 if __name__ == "__main__":
