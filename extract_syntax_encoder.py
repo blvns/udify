@@ -22,8 +22,7 @@ def main(args):
 	#load model
 	archive = load_archive(args.archive) #cuda_device=cuda_device)
 	predictor = Predictor.from_archive(archive, predictor)
-
-	print(predictor._model.text_field_embedder.bert_model)
+	encoder = predictor._model.text_field_embedder.token_embedder_bert.bert_model
 
 
 if __name__ == "__main__":
