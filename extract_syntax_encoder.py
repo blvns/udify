@@ -3,7 +3,7 @@ from allennlp.predictors.predictor import Predictor
 from allennlp.common.util import import_submodules
 
 import argparse
-import pickle
+import torch
 #import sys
 #sys.path.append('/private/home/tblevins/udify/')
 
@@ -25,8 +25,9 @@ def main(args):
 	predictor = Predictor.from_archive(archive, predictor)
 	encoder = predictor._model.text_field_embedder.token_embedder_bert.bert_model
 
-	#save BERT encoder
-	pickle.dump(encoder, open(args.encoder_ckpt, 'wb'))
+	#save BERT encoder state_dict
+	with open(args.encoder_ckpt, 'wb') as f:
+		torch.save(encoder.state_dict(), f)
 
 if __name__ == "__main__":
 	args = parser.parse_args()
