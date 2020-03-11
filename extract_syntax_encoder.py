@@ -1,5 +1,6 @@
 from allennlp.models.archival import load_archive
 from allennlp.predictors.predictor import Predictor
+from allennlp.common.util import import_submodules
 
 from udify import util
 
