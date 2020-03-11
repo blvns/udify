@@ -24,6 +24,7 @@ def main(args):
 	predictor = Predictor.from_archive(archive, predictor)
 	encoder = predictor._model.text_field_embedder.token_embedder_bert.bert_model
 
+	print(encoder)
 
 if __name__ == "__main__":
 	args = parser.parse_args()
