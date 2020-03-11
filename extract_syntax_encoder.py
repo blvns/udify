@@ -23,7 +23,9 @@ def main(args):
 	archive = load_archive(args.archive) #cuda_device=cuda_device)
 	predictor = Predictor.from_archive(archive, predictor)
 
-	print(predictor._model.shared_encoder)
+	print(predictor._model.text_embedder)
+	input('...')
+	print(predictor._model.post_encoder_embedder)
 
 
 if __name__ == "__main__":
