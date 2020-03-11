@@ -20,7 +20,7 @@ def main(args):
 	predictor = "udify_predictor"
 
 	#load model
-	archive = load_archive(args.ckpt) #cuda_device=cuda_device)
+	archive = load_archive(args.archive) #cuda_device=cuda_device)
 	predictor = Predictor.from_archive(archive, predictor)
 
 	print(predictor._model.shared_encoder)
