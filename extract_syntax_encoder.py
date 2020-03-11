@@ -35,8 +35,8 @@ def main(args):
 
 
 	#load model
-	archive = load_archive(args.ckpt) #cuda_device=cuda_device)
-	predictor = Predictor.from_archive(archive)
+	archive = load_archive(archive) #cuda_device=cuda_device)
+	predictor = Predictor.from_archive(archive, predictor)
 
 	print(predictor)
 
