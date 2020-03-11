@@ -3,8 +3,8 @@ from allennlp.predictors.predictor import Predictor
 from allennlp.common.util import import_submodules
 
 import argparse
-import sys
-sys.path.append('/private/home/tblevins/udify/')
+#import sys
+#sys.path.append('/private/home/tblevins/udify/')
 
 parser = argparse.ArgumentParser(description='Extract BERT encoder from UDify model')
 parser.add_argument('--ckpt', type=str, required=True,
